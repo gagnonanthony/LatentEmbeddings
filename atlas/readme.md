@@ -25,7 +25,7 @@ You will also need both Brainnetome adult $^3$ (for subcortical segmentation) an
 
 The bash script can be called from the command line, assuming you have access to all dependencies (activate the `scilpy` python environment). Here are the required arguments:
 ```bash
-bash create_atlas_fsLR_32k.sh <path/to/freesurfer/> <path/to/templateflow/> atlas-BrainnetomeChild refs/child_164k_L.label.gii refs/child_164k_R.label.gii refs/BN_Atlas_subcortex.gca
+bash create_atlas_fsLR_32k.sh <path/to/freesurfer/> <path/to/templateflow/> <path/to/output_dir/> <path/to/child_164k_L.label.gii> <path/to/child_164k_R.label.gii> <path/to/BN_Atlas_freesurfer/BN_Atlas_subcortex.gca> <path/to/BN_Atlas_freesurfer/fsaverage/fsaverage_LR32k/fsaverage.BN_Atlas.32k_fs_LR.dlabel.nii>
 ```
 
 #### Inspect the results.
