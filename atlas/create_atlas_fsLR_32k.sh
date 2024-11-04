@@ -9,10 +9,14 @@ OUTPUT_DIR=$3
 LEFT_ATLAS=$4
 RIGHT_ATLAS=$5
 SUBCORTICAL_ATLAS=$6
-REFERENCE=$7
 
 # Fetch path of the current script.
 WDIR=$(dirname $(realpath $0))
+
+# Set up the reference files
+REFERENCE="${WDIR}/refs/fsaverage.BN_Atlas.32k_fs_LR.dlabel.nii"
+REFERENCE_VOL="${WDIR}/refs/reference_subcortical_parcels.nii.gz"
+REFERENCE_CIFTI="${WDIR}/refs/atlas-Tian_space-fsLR_den-32k_dseg.dlabel.nii"
 
 # Set up the output directory
 mkdir -p ${OUTPUT_DIR}
@@ -36,11 +40,13 @@ scil_labels_combine.py ${WDIR}/temp/BN_child_subcortical.nii.gz --volume_ids ${W
     214 215 216 217 218 219 220 221 222 223 224 225 226 227
 
 # Create a cifti header in the nifit file.
-wb_command -volume-label-import ${WDIR}/temp/BN_child_subcortical.nii.gz ${WDIR}/BN_child_parcel_labels.txt ${WDIR}/temp/BN_child_subcortical.nii -drop-unused-labels
+wb_command -volume-label-import ${WDIR}/temp/BN_child_subcortical.nii.gz ${WDIR}/refs/BN_child_parcel_labels.txt ${WDIR}/temp/BN_child_subcortical.nii -drop-unused-labels
+
+# Resample into 32k space.
+wb_command -volume-resample ${WDIR}/temp/BN_child_subcortical.nii ${REFERENCE_VOL} ENCLOSING_VOXEL ${WDIR}/temp/BN_child_subcortical_32k.nii
 
 # Create the 164k version of the dense nifti files.
 wb_command -cifti-create-label ${WDIR}/temp/atlas-BrainnetomeChild_space-fsLR_den-164k_dseg.dlabel.nii \
-    -volume ${WDIR}/temp/BN_child_subcortical.nii ${WDIR}/temp/BN_child_subcortical.nii \
     -left-label ${LEFT_ATLAS} \
     -right-label ${RIGHT_ATLAS}
 
@@ -50,10 +56,16 @@ wb_command -cifti-resample ${WDIR}/temp/atlas-BrainnetomeChild_space-fsLR_den-16
     -left-spheres ${TEMPLATEFLOW_HOME}/tpl-fsLR/tpl-fsLR_space-fsaverage_hemi-L_den-164k_sphere.surf.gii ${TEMPLATEFLOW_HOME}/tpl-fsLR/tpl-fsLR_space-fsaverage_hemi-L_den-32k_sphere.surf.gii \
     -right-spheres ${TEMPLATEFLOW_HOME}/tpl-fsLR/tpl-fsLR_space-fsaverage_hemi-R_den-164k_sphere.surf.gii ${TEMPLATEFLOW_HOME}/tpl-fsLR/tpl-fsLR_space-fsaverage_hemi-R_den-32k_sphere.surf.gii
 
+# Add subcortical data by creating a dense cifti file from template.
+wb_command -cifti-create-dense-from-template ${REFERENCE_CIFTI} \
+    ${WDIR}/temp/atlas-BrainnetomeChild_space-fsLR_den-32k_dseg.dlabel.nii \
+    -volume-all ${WDIR}/temp/BN_child_subcortical_32k.nii \
+    -cifti ${WDIR}/temp/atlas-BrainnetomeChild_space-fsLR_den-32k_dseg.dlabel.nii
+
 # Move files in output directory.
 mv ${WDIR}/temp/atlas-BrainnetomeChild_space-fsLR_den-32k_dseg.dlabel.nii ${OUTPUT_DIR}/
-cp ${WDIR}/atlas-BrainnetomeChild_space-fsLR_den-32k_dseg.json ${OUTPUT_DIR}/
-cp ${WDIR}/atlas-BrainnetomeChild_dseg.tsv ${OUTPUT_DIR}/
+cp ${WDIR}/refs/atlas-BrainnetomeChild_space-fsLR_den-32k_dseg.json ${OUTPUT_DIR}/
+cp ${WDIR}/refs/atlas-BrainnetomeChild_dseg.tsv ${OUTPUT_DIR}/
 
 # Clean up.
 rm -rf ${WDIR}/temp/

@@ -1,4 +1,4 @@
-Index	label	cifti_label	color_red	color_green	color_blue	opacity
+index	label	cifti_label	color_red	color_green	color_blue	opacity
 1	SFG_L_6_1	SFG_L_6_1	0	255	0	255
 2	SFG_R_6_1	SFG_R_6_1	0	0	255	255
 3	SFG_L_6_2	SFG_L_6_2	255	0	0	255
